@@ -214,7 +214,7 @@ async function scrapePost(page, url, author, postIndex, postTotal) {
     // load page and wait for post to appear
 
     let attempt = 1;
-    for (attempt = 1; attempt < 4; ++attempt) {
+    for (attempt = 1; attempt < 4; attempt++) {
         if (attempt > 1) {
             logger(`Attempt ${attempt + 1} to scrape page...`);
         }
@@ -222,32 +222,32 @@ async function scrapePost(page, url, author, postIndex, postTotal) {
         try {
             await page.goto(url, {
                 waitUntil: 'domcontentloaded',
-                timeout: 10 * 1000,
+                timeout: 10 * 2000,
             });
 
             await page.waitForSelector('.b-post__wrapper', {
-                timeout: 10 * 1000,
+                timeout: 10 * 2000,
             });
 
             break;
         } catch (errors) {
-            logger('Failed to load page: ' + errors.message);
+            logger('Failed to load page: ' + errors.message, 'error');
 
             await page.reload();
         }
     }
 
     if (attempt >= 3) {
-        logger(`Failed to load "${url}", continuing.`);
+        logger(`Failed to load "${url}", continuing.`, 'error');
 
         return 0;
     }
 
     let sources = [];
 
-    for (attempt = 1; attempt < 4; ++attempt) {
+    for (attempt = 1; attempt < 4; attempt++) {
         if (attempt > 1) {
-            logger(`Attempt ${attempt} to scrape sources...`);
+            logger(`Attempt ${attempt} to scrape sources...`, 'info');
         }
 
         // get video
@@ -306,7 +306,7 @@ async function scrapePost(page, url, author, postIndex, postTotal) {
                     }
                 });
             } catch (error) {
-                logger('Failed to grab source: ' + error.message);
+                logger('Failed to grab source: ' + error.message, 'error');
                 continue;
             }
         }
@@ -321,7 +321,7 @@ async function scrapePost(page, url, author, postIndex, postTotal) {
                     sources.push(imageSource);
                 }
             } catch (error) {
-                logger('Failed to grab source: ' + error.message);
+                logger('Failed to grab source: ' + error.message, 'error');
                 continue;
             }
         }
@@ -535,7 +535,7 @@ async function scrapeMediaPage(page, db, author) {
 
                 let foundUnseen = [];
                 found.forEach((id) => {
-                    if (!seenPosts.includes(id) && !unseenPosts.includes(id)) {
+                    if (!unseenPosts.includes(id)) {
                         foundUnseen.push(id);
                     }
                 });
@@ -803,6 +803,7 @@ async function scrape() {
         width: 1280,
         height: 720,
     });
+    page.setDefaultTimeout(120000);
 
     logger('Loading main page...');
 
@@ -847,7 +848,7 @@ async function scrape() {
 
     await rimrafPromise('./downloads/new');
 
-    fs.mkdir('./downloads/new', { recursive: true });
+    await fs.mkdir('./downloads/new', { recursive: true });
 
     // scrape media pages
 
