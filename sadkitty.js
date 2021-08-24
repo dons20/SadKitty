@@ -526,7 +526,7 @@ async function scrapeMediaPage(page, db, author) {
 
                 let foundUnseen = [];
                 found.forEach((id) => {
-                    if (!unseenPosts.includes(id)) {
+                    if (!seenPosts.includes(id) && !unseenPosts.includes(id)) {
                         foundUnseen.push(id);
                     }
                 });
